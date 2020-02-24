@@ -11,6 +11,88 @@ $ brew install find-unity
 
 ## Usage
 
+### Bash
+
 ```bash
 $ find-unity
+```
+
+### Unity
+
+#### Editor/Build.cs
+
+```csharp
+using System.Linq;
+using UnityEditor;
+using UnityEditor.Build.Reporting;
+using UnityEngine;
+
+public static class Build
+{
+
+    [MenuItem("Build/Build All")]
+    public static void BuildAll()
+    {
+
+        BuildAndroid();
+
+        BuildIOS();
+
+    }
+
+    [MenuItem("Build/Build Android")]
+    public static void BuildAndroid()
+    {
+
+        var report = BuildPipeline.BuildPlayer(new BuildPlayerOptions
+        {
+            locationPathName = "Builds/Android.apk",
+            scenes = EditorBuildSettings.scenes.Select(s => s.path).ToArray(),
+            target = BuildTarget.Android,
+            options = BuildOptions.None
+        });
+
+        Debug.Log(
+            $"Android build {(report.summary.result.Equals(BuildResult.Succeeded) ? "completed" : "failed")}.");
+
+    }
+
+    [MenuItem("Build/Build iOS")]
+    public static void BuildIOS()
+    {
+
+        var report = BuildPipeline.BuildPlayer(new BuildPlayerOptions
+        {
+            locationPathName = "Builds/iOS",
+            scenes = EditorBuildSettings.scenes.Select(s => s.path).ToArray(),
+            target = BuildTarget.iOS,
+            options = BuildOptions.None
+        });
+
+        Debug.Log($"iOS build {(report.summary.result.Equals(BuildResult.Succeeded) ? "completed" : "failed")}.");
+
+    }
+
+}
+```
+
+#### Makefile
+
+```bash
+build-all: build-android build-ios
+
+build-android:
+	"$(shell find-unity)/Contents/MacOS/Unity" -projectPath "$(shell pwd)/" -batchmode -quit -executeMethod "Build.BuildAndroid"
+
+build-ios:
+	"$(shell find-unity)/Contents/MacOS/Unity" -projectPath "$(shell pwd)/" -batchmode -quit -executeMethod "Build.BuildIOS"
+
+clean:
+	git clean -xdf
+```
+
+#### Bash
+
+```bash
+$ make build-all
 ```
