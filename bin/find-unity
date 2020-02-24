@@ -1,0 +1,19 @@
+#!/bin/bash
+
+{
+
+    UNITY_INSTALLS=$(find /Applications/Unity -name "Unity.app" | sort -r)
+
+    if [ -f "ProjectSettings/ProjectVersion.txt" ]; then
+
+        PROJECT_VERSION=$(grep -o -E "[0-9]+\.[0-9]+\.[0-9]+[a-z][0-9]+" "ProjectSettings/ProjectVersion.txt" | head -1)
+
+        UNITY_INSTALL_VERSION_MATCH=$(grep "${PROJECT_VERSION}" <<< "${UNITY_INSTALLS}")
+
+    fi
+
+    UNITY_INSTALL_LATEST=$(head -1 <<< "${UNITY_INSTALLS}")
+
+    echo ${UNITY_INSTALL_VERSION_MATCH:-$UNITY_INSTALL_LATEST}
+
+}
