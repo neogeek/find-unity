@@ -2,6 +2,8 @@
 
 > Command line tool for locating the version of Unity that a project was built with
 
+![GitHub tag (latest SemVer)](https://img.shields.io/github/v/tag/neogeek/find-unity)
+
 ## Install
 
 ```bash
