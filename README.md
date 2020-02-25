@@ -17,6 +17,17 @@ $ brew install find-unity
 $ find-unity
 ```
 
+```
+Usage: find-unity [options]
+
+OPTIONS:
+   -v     show the version number and then exit
+   -h     show this help message and then exit
+
+   -e     path to search for Unity editors
+   -f     file to checking project specific version number
+```
+
 ### Unity
 
 #### Editor/Build.cs

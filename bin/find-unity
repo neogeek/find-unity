@@ -1,12 +1,82 @@
 #!/bin/bash
 
-{
+VERSION=2.0.0
 
-    UNITY_INSTALLS=$(find /Applications/Unity -name "Unity.app" | sort -r)
+REDON=$(tput setaf 1)
+GREENON=$(tput setaf 2)
+COLOROFF=$(tput sgr0)
 
-    if [ -f "ProjectSettings/ProjectVersion.txt" ]; then
+UNITY_EDITOR_FOLDER=/Applications/Unity/Hub/Editor
 
-        PROJECT_VERSION=$(grep -o -E "[0-9]+\.[0-9]+\.[0-9]+[a-z][0-9]+" "ProjectSettings/ProjectVersion.txt" | head -1)
+PROJECT_VERSION_FILE=ProjectSettings/ProjectVersion.txt
+
+checkRequirements() {
+
+    if [ ! -d "${UNITY_EDITOR_FOLDER}" ]; then
+
+        printf "%sFolder not found at ${UNITY_EDITOR_FOLDER}%s\n" "${REDON}" "${COLOROFF}"
+
+        exit 1
+
+    fi
+
+}
+
+displayVersion() {
+
+    echo "${VERSION}"
+
+    exit
+
+}
+
+displayHelp() {
+
+    printf "Usage: find-unity [options]\n\n"
+
+    echo "OPTIONS:"
+    echo "   -v     show the version number and then exit"
+    echo "   -h     show this help message and then exit"
+    echo ""
+    echo "   -e     path to search for Unity editors"
+    echo "   -f     file to checking project specific version number"
+
+    exit
+
+}
+
+parseOptions() {
+
+    while getopts "vhe:f:" option; do
+
+        case "${option}" in
+
+            v) displayVersion;;
+            h) displayHelp;;
+
+            e) UNITY_EDITOR_FOLDER="${OPTARG}";;
+            f) PROJECT_VERSION_FILE="${OPTARG}";;
+
+            ?*) displayHelp;;
+
+        esac
+    done
+
+}
+
+findUnity() {
+
+    local UNITY_INSTALLS
+    local PROJECT_VERSION
+    local UNITY_INSTALL_VERSION_MATCH
+    local UNITY_INSTALL_LATEST
+    local UNITY_APPLICATION
+
+    UNITY_INSTALLS=$(find "${UNITY_EDITOR_FOLDER}" -name "Unity.app" -type d -maxdepth 5 | sort -r)
+
+    if [ -f "${PROJECT_VERSION_FILE}" ]; then
+
+        PROJECT_VERSION=$(grep -o -E "[0-9]+\.[0-9]+\.[0-9]+[a-z][0-9]+" "${PROJECT_VERSION_FILE}" | head -1)
 
         UNITY_INSTALL_VERSION_MATCH=$(grep "${PROJECT_VERSION}" <<< "${UNITY_INSTALLS}")
 
@@ -14,6 +84,25 @@
 
     UNITY_INSTALL_LATEST=$(head -1 <<< "${UNITY_INSTALLS}")
 
-    echo ${UNITY_INSTALL_VERSION_MATCH:-$UNITY_INSTALL_LATEST}
+    UNITY_APPLICATION=${UNITY_INSTALL_VERSION_MATCH:-$UNITY_INSTALL_LATEST}
+
+    if [ -z "${UNITY_APPLICATION}" ]; then
+
+        printf "%sUnity editors not found at ${UNITY_EDITOR_FOLDER}.%s\n" "${REDON}" "${COLOROFF}"
+
+        printf "Please install Unity Hub and at least one version of Unity before running again.\n\n"
+        printf "➜ Download Unity Hub from %shttps://unity3d.com/get-unity/update%s\n" "${GREENON}" "${COLOROFF}"
+
+        exit 1
+
+    fi
+
+    echo "${UNITY_APPLICATION}"
 
 }
+
+parseOptions "$@"
+
+checkRequirements
+
+findUnity
